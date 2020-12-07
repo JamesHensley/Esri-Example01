@@ -123,7 +123,8 @@ export class EsriMapComponent implements OnInit, OnDestroy {
       map.add(trafficLayer);
       */
 
-      fetch('/resources/allData.txt')
+      //fetch('/resources/allData.txt')
+      fetch('https://raw.githubusercontent.com/JamesHensley/Esri-Example01/master/src/resources/allData.txt')
       .then(data => data.text())
       .then(data => {
         return data.split('\r\n')

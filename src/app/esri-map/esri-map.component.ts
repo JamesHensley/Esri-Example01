@@ -173,6 +173,7 @@ export class EsriMapComponent implements OnInit, OnDestroy {
       .then(data => {
         this._featLayer = new FeatureLayer({
           title: 'Traffic Layer',
+          refreshInterval: 5,
           source: data,
           useViewTime: true,
           timeExtent: {

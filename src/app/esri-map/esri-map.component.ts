@@ -246,14 +246,22 @@ export class EsriMapComponent implements OnInit, OnDestroy {
         container: this.timeSliderDivEl.nativeElement,
         view: this._view,
         mode: "time-window",
+        loop: true,
+        playRate: 250,
         fullTimeExtent: { // entire extent of the timeSlider
           start: new Date(2020, 11, 5),
           end: new Date(2020, 11, 10)
         },
         values:[ // location of timeSlider thumbs
-          new Date(2020, 11, 5),
-          new Date(2020, 11, 6)
-        ]
+          new Date(2020, 11, 5, 0),
+          new Date(2020, 11, 5, 3)
+        ],
+        stops: {
+          interval: {
+            value: 1,
+            unit: "hours"
+          }
+        }
       });
       // this._view.ui.add(this._timeSlider, { position: "top-right" });
       // this._view.ui.add(this._timeSlider);
@@ -300,8 +308,10 @@ export class EsriMapComponent implements OnInit, OnDestroy {
           if (!val) {
             // Get the number of features in the view and update the model
             layerView.queryFeatures()
-              .then(results => results.features.length)
-              .then(featCount => { this.featuresOnMap = featCount });
+              .then(results => {
+                // console.log('query results: ', results);
+                this.featuresOnMap = results.features.length
+              });
           }
         });
       });

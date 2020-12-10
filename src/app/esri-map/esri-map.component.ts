@@ -133,7 +133,7 @@ export class EsriMapComponent implements OnInit, OnDestroy {
           .sort((a, b) => a.timeStamp > b.timeStamp ? -1 : ( a.timeStamp < b.timeStamp ? -1 : 0))
           .map(d => {
             d.id = Guid.create().toString();
-            d.timeStamp = new Date(parseInt(d.timeStamp) * 1000).toLocaleString();
+            d.timeStamp = d.timeStamp + '000';
             d.EventText = d.EventText.replace("Q", (d.qVal ? d.qVal : 'undefined'));
             return d;
           });
@@ -165,7 +165,7 @@ export class EsriMapComponent implements OnInit, OnDestroy {
               longitude: d.Longitude,
               eventText: d.EventText,
               eventCategory: d.EventCategory,
-              timeStamp: new Date(d.timeStamp).getTime()
+              timeStamp: parseInt(d.timeStamp)
             }
           }
         });
@@ -263,8 +263,6 @@ export class EsriMapComponent implements OnInit, OnDestroy {
           }
         }
       });
-      // this._view.ui.add(this._timeSlider, { position: "top-right" });
-      // this._view.ui.add(this._timeSlider);
 
       return this._view;
     } catch (error) {

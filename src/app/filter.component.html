@@ -1,0 +1,24 @@
+<div id='filterDiv' class='p-2'>
+    <input type="text" class='w-100'
+        (keyup) = 'filterUpdatedByText($event.target.value)'>
+    <table class='w-100'>
+        <tr *ngFor='let category of categories'>
+            <td>
+                <input class='mr-2'
+                    type="checkbox"
+                    [value] = 'category.categoryName'
+                    [checked] = 'category.selected'
+                    (change) = 'filterUpdatedByCategory(category.categoryName, $event.target.checked)'>
+                <label [for]='category.categoryName'>{{category.categoryName}}</label>
+            </td>
+            <td>{{category.count}}</td>
+        </tr>
+    </table>
+    <div class='container-fluid'>
+        <div class='row'>
+            <div class='col-6'><button class='w-100' (click)='checkAllCats()'>Check All</button></div>
+            <div class='col-6'><button class='w-100' (click)='unCheckAllCats()'>UnCheck All</button></div>
+        </div>
+    </div>
+    Features In View: {{_shownEvents}}
+</div>

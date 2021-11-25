@@ -30,16 +30,16 @@ export class FeatureLayerFactory {
         const sr = new SimpleRenderer({
             symbol: new SimpleMarkerSymbol({
                 color: [0, 0, 0, 0.5],
-                // outline: [0, 0, 0, 1],
+                outline: { style: 'short-dash' },
                 size: 10
             })
         })
         return new FeatureLayer({
             title: 'Traffic Data Layer',
             source: feats,
-            /* useViewTime: true, */
-            /* timeExtent: { start: new Date(1974, 0, 1), end: new Date(2050, 0, 1) }, */
-            /* timeInfo: { startField: "timeStamp" }, */
+            useViewTime: true,
+            timeExtent: { start: new Date(1974, 0, 1), end: new Date(2050, 0, 1) },
+            timeInfo: { startField: "timeStamp" },
             fields: [
                 { name: "ObjectID", alias: "ObjectID", type: "oid" },
                 { name: "eventText", alias: "eventText", type: "string" },

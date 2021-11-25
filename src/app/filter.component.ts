@@ -8,7 +8,7 @@ import {
     EventEmitter,
     OnDestroy
 } from "@angular/core";
-import { CategoryModel } from "./models/CategoryModel";
+import { TMCCategory } from "./models/TMCCategory";
 
 @Component({
     selector: "filter-component",
@@ -24,12 +24,12 @@ export class FilterComponent implements OnInit, OnDestroy {
     set eventsOnMap(evs: number) { this._shownEvents = evs; }
 
     @Output()
-    filterCategoriesChanged:EventEmitter<Array<CategoryModel>> = new EventEmitter<Array<CategoryModel>>();
+    filterCategoriesChanged:EventEmitter<Array<TMCCategory>> = new EventEmitter<Array<TMCCategory>>();
 
     @Output()
     filterTextUpdated:EventEmitter<string> = new EventEmitter<string>();
 
-    private _categories: Array<CategoryModel>;
+    private _categories: Array<TMCCategory>;
     public _shownEvents: number;
 
     ngOnInit(): void {

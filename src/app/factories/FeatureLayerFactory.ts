@@ -1,51 +1,42 @@
-import { Point } from '@arcgis/core/geometry';
-import Graphic from '@arcgis/core/Graphic';
 import FeatureLayer from '@arcgis/core/layers/FeatureLayer';
 import { SimpleRenderer } from '@arcgis/core/renderers';
 import { SimpleMarkerSymbol } from "@arcgis/core/symbols";
 
-import { RecordModel } from "../models/RecordModel";
+import { GraphicMapper } from '../services/Mapper';
 
-export class FeatureLayerFactory {
-    public static BuildFeatureLayer(features: Array<RecordModel>): FeatureLayer {
-        const feats = features.map((d, i) => new Graphic({
-            attributes: {
-                ObjectID: i,
-                title: d.EventText,
-                state: d.State,
-                latitude: d.Latitude,
-                longitude: d.Longitude,
-                eventText: d.EventText,
-                eventCategory: d.EventCategory,
-                eventNum: d.EventNum,
-                timeStamp: parseInt(d.timeStamp, 10)
-            },
-            geometry: new Point({
-                x: parseFloat(d.Longitude),
-                y: parseFloat(d.Latitude)
-            })
-        }))
-        .filter((f, i) => i < 50);
+export interface IFeatureLayerProps {
+    layerName?: string;
+}
 
-        const sr = new SimpleRenderer({
-            symbol: new SimpleMarkerSymbol({
-                color: [0, 0, 0, 0.5],
-                outline: { style: 'short-dash' },
-                size: 10
-            })
-        })
+export class FeatureLayerFactory<T> {
+    public BuildFeatureLayer(features: Array<T>, init?:Partial<IFeatureLayerProps>): FeatureLayer {
+        const mapper = new GraphicMapper<T>();
+        const feats = features.map(d => mapper.MapObj(d));
+
+        let dates = feats.map(d => d.attributes.timeStamp)
+            .sort()
+            .filter((f,i,e) => i == 0 || i == e.length - 1);
+
         return new FeatureLayer({
-            title: 'Traffic Data Layer',
+            title: init.layerName ? init.layerName : 'Undefined Layer',
             source: feats,
             useViewTime: true,
-            timeExtent: { start: new Date(1974, 0, 1), end: new Date(2050, 0, 1) },
+            timeExtent: { start: new Date(dates[0]), end: new Date(dates[1]) },
             timeInfo: { startField: "timeStamp" },
             fields: [
                 { name: "ObjectID", alias: "ObjectID", type: "oid" },
-                { name: "eventText", alias: "eventText", type: "string" },
+                { name: "title", alias: "title", type: "string" },
+                { name: "latitude", alias: "latitude", type: "string" },
+                { name: "longitude", alias: "longitude", type: "string" },
+                { name: "eventCategory", alias: "eventCategory", type: "string" },
                 { name: "timeStamp", alias: "timeStamp", type: "long" }
             ],
-            renderer: sr
+            renderer: new SimpleRenderer({
+                symbol: new SimpleMarkerSymbol({
+                    color: [0, 0, 0, 0.5],
+                    size: 10
+                })
+            })
         });
     }
 }

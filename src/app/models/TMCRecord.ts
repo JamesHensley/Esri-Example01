@@ -1,4 +1,4 @@
-export class RecordModel {
+export class TMCRecord {
     timeStamp: string;
     EventNum: string;
     EventCategory: string;
@@ -18,7 +18,7 @@ export class RecordModel {
     Special: string;
     id: string;
 
-    constructor(init?: Partial<RecordModel>) {
+    constructor(init?: Partial<TMCRecord>) {
         if (init) {
             Object.assign(this, init);
         }

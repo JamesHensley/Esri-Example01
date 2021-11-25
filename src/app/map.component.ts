@@ -5,11 +5,14 @@ import { ViewChild, ElementRef } from "@angular/core";
 import Map from "@arcgis/core/Map";
 import MapView from '@arcgis/core/views/MapView';
 import FeatureLayer from '@arcgis/core/layers/FeatureLayer';
+import FeatureLayerView from '@arcgis/core/views/layers/FeatureLayerView';
 import Graphic from "@arcgis/core/Graphic";
+import TimeSlider from '@arcgis/core/widgets/TimeSlider';
 
-import { CategoryModel } from "./models/CategoryModel";
+import { TMCCategory } from "./models/TMCCategory";
 import { FeatureService } from "./services/FeatureService";
 import { FeatureLayerFactory } from "./factories/FeatureLayerFactory";
+import { TMCRecord } from "./models/TMCRecord";
 
 @Component({
     selector: "map-component",
@@ -20,17 +23,19 @@ import { FeatureLayerFactory } from "./factories/FeatureLayerFactory";
 export class MapComponent implements OnInit, OnDestroy {
     private mapView: MapView;
     private featureLayer: FeatureLayer;
+    private featureLayerView: FeatureLayerView;
 
     private mapZoom: number;
     private mapCenter: Array<number>;
     private baseMapName: string;
 
     public featuresOnMap: number;
-    public filterCategories: Array<CategoryModel>;
+    public filterCategories: Array<TMCCategory>;
 
     public features: Array<Graphic> = [];
 
     @ViewChild("mapViewNode", { static: true }) private mapViewElement: ElementRef;
+    @ViewChild("timeSliderDiv", { static: true }) private timeSliderElement: ElementRef;
     @Output() mapLoadedEvent = new EventEmitter<boolean>();
 
     @Input()
@@ -45,8 +50,6 @@ export class MapComponent implements OnInit, OnDestroy {
     set basemap(basemap: string) { this.baseMapName = basemap; }
     get basemap(): string { return this.baseMapName; }
 
-    constructor(private featureService: FeatureService) {}
-    
     ngOnInit(): void {
         const map = new Map({ basemap: this.baseMapName });
         this.mapView = new MapView({
@@ -55,12 +58,23 @@ export class MapComponent implements OnInit, OnDestroy {
             zoom: this.mapZoom,
             container: this.mapViewElement.nativeElement
         });
+        const timeSlider = new TimeSlider({
+            container: this.timeSliderElement.nativeElement,
+            mode: "time-window",
+            view: this.mapView
+        });
 
-        this.featureService.GetFeatures()
+        FeatureService.GetFeatures()
         .then(features => {
-            this.featureLayer = FeatureLayerFactory.BuildFeatureLayer(features);
+            const factory = new FeatureLayerFactory<TMCRecord>();
+            this.featureLayer = factory.BuildFeatureLayer(features, { layerName: 'Traffic Data Layer'});
             map.add(this.featureLayer);
-            console.log("FeatLayer: ", this.featureLayer);
+
+            this.mapView.whenLayerView(this.featureLayer).then(lv => {
+                this.featureLayerView = lv;
+                timeSlider.fullTimeExtent = this.featureLayer.timeExtent.expandTo("hours");
+            });
+            console.log(FeatureService.Categories);
         })
         .catch(e => console.log(e));
     }

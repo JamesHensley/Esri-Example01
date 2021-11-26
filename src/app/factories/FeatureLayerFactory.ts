@@ -1,3 +1,4 @@
+import { keyframes } from '@angular/animations';
 import FeatureLayer from '@arcgis/core/layers/FeatureLayer';
 import { SimpleRenderer } from '@arcgis/core/renderers';
 import { SimpleMarkerSymbol } from "@arcgis/core/symbols";
@@ -17,6 +18,11 @@ export class FeatureLayerFactory<T> {
             .sort()
             .filter((f,i,e) => i == 0 || i == e.length - 1);
 
+        const fieldNames = feats
+            .reduce((t, n) => [].concat.apply(t, Object.keys(n.attributes)), [])
+            .filter((f,i,e) => e.indexOf(f) == i);
+        console.log("Feature FieldNames: ", fieldNames);
+
         return new FeatureLayer({
             title: init.layerName ? init.layerName : 'Undefined Layer',
             source: feats,
@@ -26,9 +32,10 @@ export class FeatureLayerFactory<T> {
             fields: [
                 { name: "ObjectID", alias: "ObjectID", type: "oid" },
                 { name: "title", alias: "title", type: "string" },
+                { name: "info", alias: "info", type: "string" },
+                { name: "category", alias: "category", type: "string" },
                 { name: "latitude", alias: "latitude", type: "string" },
                 { name: "longitude", alias: "longitude", type: "string" },
-                { name: "eventCategory", alias: "eventCategory", type: "string" },
                 { name: "timeStamp", alias: "timeStamp", type: "long" }
             ],
             renderer: new SimpleRenderer({

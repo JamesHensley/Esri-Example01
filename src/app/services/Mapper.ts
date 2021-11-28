@@ -12,13 +12,13 @@ export class GraphicMapper<T> {
     private mapTMCRecords(rec: TMCRecord): Graphic {
         return new Graphic({
             attributes: {
-                ObjectID: (new Date().getTime() + Math.random() * 500).toString(),
+                ObjectID: Math.floor(new Date().getTime() + Math.random() * 500).toString(),
                 title: rec.EventText,
-                info: rec.EventText,
-                category: rec.EventCategory,
-                latitude: rec.Latitude,
-                longitude: rec.Longitude,
-                timeStamp: parseInt(rec.timeStamp, 10) * 1000
+                // info: rec.EventText,
+                // category: rec.EventCategory,
+                // latitude: rec.Latitude,
+                // longitude: rec.Longitude,
+                // timeStamp: parseInt(rec.timeStamp, 10) * 1000
             },
             geometry: new Point({
                 x: parseFloat(rec.Longitude),

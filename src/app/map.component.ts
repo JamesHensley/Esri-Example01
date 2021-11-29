@@ -4,7 +4,6 @@ import { ViewChild, ElementRef } from "@angular/core";
 
 import Map from "@arcgis/core/Map";
 import MapView from '@arcgis/core/views/MapView';
-import FeatureLayer from '@arcgis/core/layers/FeatureLayer';
 import FeatureLayerView from '@arcgis/core/views/layers/FeatureLayerView';
 import Graphic from "@arcgis/core/Graphic";
 import TimeSlider from '@arcgis/core/widgets/TimeSlider';
@@ -22,7 +21,7 @@ import { FlightRecordRepo } from "./repository/FlightRecordRepo";
 
 export class MapComponent implements OnInit, OnDestroy {
     private mapView: MapView;
-    private featureLayer: FeatureLayer;
+    private timeSlider: TimeSlider;
 
     private mapZoom: number;
     private mapCenter: Array<number>;
@@ -58,29 +57,31 @@ export class MapComponent implements OnInit, OnDestroy {
             container: this.mapViewElement.nativeElement
         });
 
+        this.timeSlider = new TimeSlider({
+            container: this.timeSliderElement.nativeElement,
+            mode: "time-window",
+            view: this.mapView
+        });
+
         this.mapView.ui.add(new LayerList({ view: this.mapView }), {
             position: "top-right"
         });
 
         new TMCRecordRepo().GetFeatures()
         .then(features => {
-            this.featureLayer = FeatureLayerFactory.BuildFeatureLayer(features, { layerName: 'Traffic Data Layer', useViewTime: true });
-            map.add(this.featureLayer);
-            const timeSlider = new TimeSlider({
-                container: this.timeSliderElement.nativeElement,
-                mode: "time-window",
-                view: this.mapView
-            });
-            this.mapView.whenLayerView(this.featureLayer).then(lv => {
-                timeSlider.fullTimeExtent = this.featureLayer.timeExtent.expandTo("hours");
+            const featureLayer = FeatureLayerFactory.BuildFeatureLayer(features, { layerName: 'Traffic Data Layer', useViewTime: true });
+            map.add(featureLayer);
+
+            this.mapView.whenLayerView(featureLayer).then(lv => {
+                this.timeSlider.fullTimeExtent = featureLayer.timeExtent.expandTo("hours");
             });
         })
         .catch(e => console.log(e));
 
         new FlightRecordRepo().GetFeatures()
         .then(features => {
-            const newFL = FeatureLayerFactory.BuildFeatureLayer(features, { renderStyle: 'Line', layerName: 'Flight Aware Layer' });
-            map.add(newFL);
+            const featureLayer = FeatureLayerFactory.BuildFeatureLayer(features, { renderStyle: 'Line', layerName: 'Flight Aware Layer' });
+            map.add(featureLayer);
         })
         .catch(e => console.log(e));
     }
@@ -92,9 +93,9 @@ export class MapComponent implements OnInit, OnDestroy {
     }
 
     public filterTextUpdated(): void {
-        console.log("filterTextUpdated Called");
-        const xx = this.mapView.allLayerViews.find(x => x.layer === this.featureLayer);
-        console.log("Found Layer Views: ", xx);
+        // console.log("filterTextUpdated Called");
+        // const xx = this.mapView.allLayerViews.find(x => x.layer === this.featureLayer);
+        // console.log("Found Layer Views: ", xx);
     }
 
     private applyFilter(): void {

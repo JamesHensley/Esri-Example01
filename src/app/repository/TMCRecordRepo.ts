@@ -5,14 +5,9 @@ import { BaseRepository } from './BaseRepository';
 
 export class TMCRecordRepo implements BaseRepository<TMCRecord> {
     public GetFeatures(): Promise<Array<Graphic>> {
-        return fetch('https://raw.githubusercontent.com/JamesHensley/Esri-Example01/master/src/resources/allData.txt')
-        .then(data => data.text())
-        .then(data => {
-            return data.split('\r\n')
-            .filter(d => d.length > 0)
-            .map(d => new TMCRecord(JSON.parse(d)))
-            .filter(f => f.IsValid)
-        })
+        return fetch('https://raw.githubusercontent.com/JamesHensley/Esri-Example01/master/src/resources/allData.json')
+        .then(data => data.json())
+        .then(data => data.map(d => new TMCRecord(d)))
         .then(data => {
             const factory = new GraphicFactory<TMCRecord>();
             return data.map(d => factory.BuildGraphic(d))

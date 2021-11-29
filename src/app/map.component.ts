@@ -57,11 +57,7 @@ export class MapComponent implements OnInit, OnDestroy {
             zoom: this.mapZoom,
             container: this.mapViewElement.nativeElement
         });
-        const timeSlider = new TimeSlider({
-            container: this.timeSliderElement.nativeElement,
-            mode: "time-window",
-            view: this.mapView
-        });
+
         this.mapView.ui.add(new LayerList({ view: this.mapView }), {
             position: "top-right"
         });
@@ -70,7 +66,11 @@ export class MapComponent implements OnInit, OnDestroy {
         .then(features => {
             this.featureLayer = FeatureLayerFactory.BuildFeatureLayer(features, { layerName: 'Traffic Data Layer', useViewTime: true });
             map.add(this.featureLayer);
-
+            const timeSlider = new TimeSlider({
+                container: this.timeSliderElement.nativeElement,
+                mode: "time-window",
+                view: this.mapView
+            });
             this.mapView.whenLayerView(this.featureLayer).then(lv => {
                 timeSlider.fullTimeExtent = this.featureLayer.timeExtent.expandTo("hours");
             });
@@ -82,6 +82,7 @@ export class MapComponent implements OnInit, OnDestroy {
             const newFL = FeatureLayerFactory.BuildFeatureLayer(features, { renderStyle: 'Line', layerName: 'Flight Aware Layer' });
             map.add(newFL);
         })
+        .catch(e => console.log(e));
     }
 
     ngOnDestroy() {

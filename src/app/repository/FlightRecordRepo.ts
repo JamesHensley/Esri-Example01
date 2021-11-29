@@ -1,5 +1,5 @@
 import Graphic from "@arcgis/core/Graphic";
-import { GraphicMapper } from "../mapper/GraphicMapper";
+import { GraphicFactory } from "../factories/GraphicFactory";
 import { FlightRecord } from "../models/FlightRecord";
 import { BaseRepository } from "./BaseRepository";
 
@@ -9,8 +9,8 @@ export class FlightRecordRepo implements BaseRepository<FlightRecord> {
         .then(data => data.json())
         .then(data => data.features.map(d => new FlightRecord(d)))
         .then(data => {
-            const mapper = new GraphicMapper<FlightRecord>();
-            return data.map(d => mapper.MapObj(d))
+            const factory = new GraphicFactory<FlightRecord>();
+            return data.map(d => factory.BuildGraphic(d))
         })
         .then(data => Promise.resolve(data))
         .catch(e => Promise.reject(e))

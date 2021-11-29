@@ -14,7 +14,6 @@ export interface IFeatureLayerProps {
 export class FeatureLayerFactory {
     public static BuildFeatureLayer(feats: Array<Graphic>, init?:Partial<IFeatureLayerProps>): FeatureLayer {
         // (window as any).jimFeats = feats;    /* Cheat for testing */
-        
         let dates = feats.map(d => d.attributes.timeStamp)
             .sort()
             .filter((f,i,e) => i == 0 || i == e.length - 1);
@@ -22,8 +21,9 @@ export class FeatureLayerFactory {
         return new FeatureLayer({
             title: init.layerName ? init.layerName : 'Undefined Layer',
             source: feats,
-            useViewTime: init.useViewTime ? true : false,   // only true if present and == True
-            timeExtent: { start: new Date(dates[0]), end: new Date(dates[1]) },
+            useViewTime: init.useViewTime ? init.useViewTime : undefined,
+            timeExtent: init.useViewTime ? { start: new Date(dates[0]), end: new Date(dates[1]) } : undefined,
+            // timeInfo: init.useViewTime ? { startField: "timeStamp" } : undefined,
             timeInfo: { startField: "timeStamp" },
             fields: [
                 { name: "ObjectID", alias: "ObjectID", type: "oid" },
@@ -56,6 +56,7 @@ export class FeatureLayerFactory {
     private static getRenderer(rStyle: RenderStyles): SimpleRenderer {
         const color = [ Math.floor(Math.random() * 150), Math.floor(Math.random() * 150), Math.floor(Math.random() * 150), 0.5 ];
         const sr = new SimpleRenderer();
+
         switch(rStyle) {
             case 'Point':
                 sr.symbol = new SimpleMarkerSymbol({

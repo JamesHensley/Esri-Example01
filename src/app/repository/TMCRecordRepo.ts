@@ -1,5 +1,5 @@
 import Graphic from '@arcgis/core/Graphic';
-import { GraphicMapper } from '../mapper/GraphicMapper';
+import { GraphicFactory } from '../factories/GraphicFactory';
 import { TMCRecord } from '../models/TMCRecord';
 import { BaseRepository } from './BaseRepository';
 
@@ -14,8 +14,8 @@ export class TMCRecordRepo implements BaseRepository<TMCRecord> {
             .filter(f => f.IsValid)
         })
         .then(data => {
-            const mapper = new GraphicMapper<TMCRecord>();
-            return data.map(d => mapper.MapObj(d))
+            const factory = new GraphicFactory<TMCRecord>();
+            return data.map(d => factory.BuildGraphic(d))
         })
         .then(d => Promise.resolve(d))
         .catch(e => Promise.reject(e));

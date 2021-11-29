@@ -6,13 +6,13 @@ import { TMCRecord } from '../models/TMCRecord';
 export class GraphicFactory<T> {
     public BuildGraphic(inRec: T): Graphic {
         // Figure out how I want to do this piece
-        if (inRec instanceof TMCRecord) { return this.mapTMCRecord(inRec); }
-        if (inRec instanceof FlightRecord) { return this.mapFlightRecord(inRec); }
+        if (inRec instanceof TMCRecord) { return this.buildFromTMCRecord(inRec); }
+        if (inRec instanceof FlightRecord) { return this.buildFromFlightRecord(inRec); }
 
         return null;
     }
 
-    private mapTMCRecord(rec: TMCRecord): Graphic {
+    private buildFromTMCRecord(rec: TMCRecord): Graphic {
         return new Graphic({
             attributes: {
                 ObjectID: Math.floor(new Date().getTime() + Math.random() * 500).toString(),
@@ -30,7 +30,7 @@ export class GraphicFactory<T> {
         });
     }
 
-    private mapFlightRecord(rec: FlightRecord): Graphic {
+    private buildFromFlightRecord(rec: FlightRecord): Graphic {
         return new Graphic({
             attributes: {
                 ObjectID: Math.floor(new Date().getTime() + Math.random() * 500).toString(),

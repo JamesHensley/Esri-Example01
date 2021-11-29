@@ -12,8 +12,10 @@ export interface IFeatureLayerProps {
 }
 
 export class FeatureLayerFactory {
-    public static BuildFeatureLayer(feats: Array<Graphic>, init?:Partial<IFeatureLayerProps>): FeatureLayer {
-        // (window as any).jimFeats = feats;    /* Cheat for testing */
+    public static BuildFeatureLayer(graphicObjs: Array<Graphic>, init?:Partial<IFeatureLayerProps>): FeatureLayer {
+        //(window as any)[`JimFeats${Math.floor(Math.random() * 100)}`] = graphicObjs;    /* Cheat for testing */
+        const feats = this.validateGeometry(graphicObjs);
+
         let dates = feats.map(d => d.attributes.timeStamp)
             .sort()
             .filter((f,i,e) => i == 0 || i == e.length - 1);
@@ -50,6 +52,19 @@ export class FeatureLayerFactory {
                     }
                 ]
             }
+        });
+    }
+
+    // Had a BIG problem (untraceable) with some of the data... an invalid feature in a feature
+    //  layer would cause the entire layer to NOT display with no warnings/errors
+    // VALIDATE EVERYTHING YOU GIVE TO ESRI
+    private static validateGeometry(feats: Array<Graphic>): Array<Graphic> {
+        return feats.filter(f => {
+            switch (f.geometry.type) {
+                case 'point': return (f.geometry as any).x && (f.geometry as any).y;
+                case 'polyline': return true;
+                default: return false;
+            };
         });
     }
 

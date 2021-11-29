@@ -10,10 +10,9 @@ import Graphic from "@arcgis/core/Graphic";
 import TimeSlider from '@arcgis/core/widgets/TimeSlider';
 import LayerList from '@arcgis/core/widgets/LayerList';
 
-import { TMCCategory } from "./models/TMCCategory";
-import { TMCFeatureService } from "./services/TMCFeatureService";
+import { TMCRecordRepo } from "./repository/TMCRecordRepo";
 import { FeatureLayerFactory } from "./factories/FeatureLayerFactory";
-import { TMCRecord } from "./models/TMCRecord";
+import { FlightRecordRepo } from "./repository/FlightRecordRepo";
 
 @Component({
     selector: "map-component",
@@ -24,15 +23,14 @@ import { TMCRecord } from "./models/TMCRecord";
 export class MapComponent implements OnInit, OnDestroy {
     private mapView: MapView;
     private featureLayer: FeatureLayer;
-    private featureLayerView: FeatureLayerView;
 
     private mapZoom: number;
     private mapCenter: Array<number>;
     private baseMapName: string;
 
-    public featuresOnMap: number;
-    public filterCategories: Array<TMCCategory>;
+    private txtFilterStr = "";
 
+    public featuresOnMap: number;
     public features: Array<Graphic> = [];
 
     @ViewChild("mapViewNode", { static: true }) private mapViewElement: ElementRef;
@@ -59,27 +57,30 @@ export class MapComponent implements OnInit, OnDestroy {
             zoom: this.mapZoom,
             container: this.mapViewElement.nativeElement
         });
-        const timeSlider = new TimeSlider({
-            container: this.timeSliderElement.nativeElement,
-            mode: "time-window",
-            view: this.mapView
-        });
+
         this.mapView.ui.add(new LayerList({ view: this.mapView }), {
             position: "top-right"
         });
 
-        TMCFeatureService.GetFeatures()
+        new TMCRecordRepo().GetFeatures()
         .then(features => {
-            const factory = new FeatureLayerFactory<TMCRecord>();
-            this.featureLayer = factory.BuildFeatureLayer(features, { layerName: 'Traffic Data Layer'});
+            this.featureLayer = FeatureLayerFactory.BuildFeatureLayer(features, { layerName: 'Traffic Data Layer', useViewTime: true });
             map.add(this.featureLayer);
-
-            this.mapView.whenLayerView(this.featureLayer).then(lv => {
-                this.featureLayerView = lv;
-                timeSlider.fullTimeExtent = this.featureLayer.timeExtent.expandTo("hours");
-                console.log(this.featureLayer);
+            const timeSlider = new TimeSlider({
+                container: this.timeSliderElement.nativeElement,
+                mode: "time-window",
+                view: this.mapView
             });
-            console.log(TMCFeatureService.Categories);
+            this.mapView.whenLayerView(this.featureLayer).then(lv => {
+                timeSlider.fullTimeExtent = this.featureLayer.timeExtent.expandTo("hours");
+            });
+        })
+        .catch(e => console.log(e));
+
+        new FlightRecordRepo().GetFeatures()
+        .then(features => {
+            const newFL = FeatureLayerFactory.BuildFeatureLayer(features, { renderStyle: 'Line', layerName: 'Flight Aware Layer' });
+            map.add(newFL);
         })
         .catch(e => console.log(e));
     }
@@ -90,15 +91,18 @@ export class MapComponent implements OnInit, OnDestroy {
         }
     }
 
-    public filterByCats(): void {
-        console.log("filterByCats Called");
-        const xx = this.mapView.allLayerViews.find(x => x.layer === this.featureLayer);
-        console.log("Found Layer Views: ", xx);
-    }
-
     public filterTextUpdated(): void {
         console.log("filterTextUpdated Called");
         const xx = this.mapView.allLayerViews.find(x => x.layer === this.featureLayer);
         console.log("Found Layer Views: ", xx);
+    }
+
+    private applyFilter(): void {
+        const filterStr = `(filterableStr like ${this.txtFilterStr})`;
+        this.mapView.allLayerViews.forEach(lv => {
+            if (lv.layer.type == "feature") {
+                (lv as FeatureLayerView).filter.where = filterStr;
+            }
+        });
     }
 }

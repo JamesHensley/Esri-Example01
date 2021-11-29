@@ -6,8 +6,9 @@ import Map from "@arcgis/core/Map";
 import MapView from '@arcgis/core/views/MapView';
 import FeatureLayer from '@arcgis/core/layers/FeatureLayer';
 import FeatureLayerView from '@arcgis/core/views/layers/FeatureLayerView';
+import Graphic from "@arcgis/core/Graphic";
 import TimeSlider from '@arcgis/core/widgets/TimeSlider';
-import LayerList from "@arcgis/core/widgets/LayerList";
+import LayerList from '@arcgis/core/widgets/LayerList';
 
 import { TMCCategory } from "./models/TMCCategory";
 import { TMCFeatureService } from "./services/TMCFeatureService";
@@ -32,7 +33,7 @@ export class MapComponent implements OnInit, OnDestroy {
     public featuresOnMap: number;
     public filterCategories: Array<TMCCategory>;
 
-    // public features: Array<Graphic> = [];
+    public features: Array<Graphic> = [];
 
     @ViewChild("mapViewNode", { static: true }) private mapViewElement: ElementRef;
     @ViewChild("timeSliderDiv", { static: true }) private timeSliderElement: ElementRef;
@@ -58,27 +59,27 @@ export class MapComponent implements OnInit, OnDestroy {
             zoom: this.mapZoom,
             container: this.mapViewElement.nativeElement
         });
-        /*
         const timeSlider = new TimeSlider({
             container: this.timeSliderElement.nativeElement,
             mode: "time-window",
             view: this.mapView
         });
-        */
         this.mapView.ui.add(new LayerList({ view: this.mapView }), {
             position: "top-right"
         });
-        
+
         TMCFeatureService.GetFeatures()
         .then(features => {
             const factory = new FeatureLayerFactory<TMCRecord>();
             this.featureLayer = factory.BuildFeatureLayer(features, { layerName: 'Traffic Data Layer'});
             map.add(this.featureLayer);
+
             this.mapView.whenLayerView(this.featureLayer).then(lv => {
-                console.log(this);
                 this.featureLayerView = lv;
-                // timeSlider.fullTimeExtent = this.featureLayer.timeExtent.expandTo("hours");
+                timeSlider.fullTimeExtent = this.featureLayer.timeExtent.expandTo("hours");
+                console.log(this.featureLayer);
             });
+            console.log(TMCFeatureService.Categories);
         })
         .catch(e => console.log(e));
     }
@@ -101,4 +102,3 @@ export class MapComponent implements OnInit, OnDestroy {
         console.log("Found Layer Views: ", xx);
     }
 }
-

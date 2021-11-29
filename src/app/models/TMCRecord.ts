@@ -23,4 +23,10 @@ export class TMCRecord {
             Object.assign(this, init);
         }
     }
+
+    public get IsValid(): boolean {
+        return (this.Latitude ? true : false) &&
+            (this.Longitude ? true : false) &&
+            (this.timeStamp ? true : false);
+    }
 }

@@ -1,17 +1,18 @@
+import Graphic from '@arcgis/core/Graphic';
 import FeatureLayer from '@arcgis/core/layers/FeatureLayer';
 import { SimpleRenderer } from '@arcgis/core/renderers';
-import { SimpleMarkerSymbol } from "@arcgis/core/symbols";
+import { SimpleLineSymbol, SimpleMarkerSymbol } from "@arcgis/core/symbols";
 
-import { GraphicMapper } from '../services/Mapper';
+export type RenderStyles = 'Point' | 'Line';
 
 export interface IFeatureLayerProps {
+    renderStyle?: RenderStyles;
     layerName?: string;
+    useViewTime?: boolean;
 }
 
-export class FeatureLayerFactory<T> {
-    public BuildFeatureLayer(features: Array<T>, init?:Partial<IFeatureLayerProps>): FeatureLayer {
-        const mapper = new GraphicMapper<T>();
-        const feats = features.map(d => mapper.MapObj(d));
+export class FeatureLayerFactory {
+    public static BuildFeatureLayer(feats: Array<Graphic>, init?:Partial<IFeatureLayerProps>): FeatureLayer {
         // (window as any).jimFeats = feats;    /* Cheat for testing */
         
         let dates = feats.map(d => d.attributes.timeStamp)
@@ -21,7 +22,7 @@ export class FeatureLayerFactory<T> {
         return new FeatureLayer({
             title: init.layerName ? init.layerName : 'Undefined Layer',
             source: feats,
-            useViewTime: true,
+            useViewTime: init.useViewTime ? true : false,   // only true if present and == True
             timeExtent: { start: new Date(dates[0]), end: new Date(dates[1]) },
             timeInfo: { startField: "timeStamp" },
             fields: [
@@ -33,12 +34,7 @@ export class FeatureLayerFactory<T> {
                 { name: "filterableStr", alias: "filterableStr", type: "string" },
                 { name: "timeStamp", alias: "timeStamp", type: "long" }
             ],
-            renderer: new SimpleRenderer({
-                symbol: new SimpleMarkerSymbol({
-                    color: [0, 0, 0, 0.5],
-                    size: 10
-                })
-            }),
+            renderer: this.getRenderer(init.renderStyle || 'Point'),
             popupEnabled: true,
             popupTemplate: {
                 title: '{title}',
@@ -55,5 +51,25 @@ export class FeatureLayerFactory<T> {
                 ]
             }
         });
+    }
+
+    private static getRenderer(rStyle: RenderStyles): SimpleRenderer {
+        const color = [ Math.floor(Math.random() * 150), Math.floor(Math.random() * 150), Math.floor(Math.random() * 150), 0.5 ];
+        const sr = new SimpleRenderer();
+        switch(rStyle) {
+            case 'Point':
+                sr.symbol = new SimpleMarkerSymbol({
+                    color: color,
+                    size: 10
+                });
+                break;
+            case 'Line':
+                sr.symbol = new SimpleLineSymbol({
+                    color: color,
+                    width: '4px'
+                })
+                break;
+        }
+        return sr;
     }
 }

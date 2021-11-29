@@ -10,10 +10,9 @@ import Graphic from "@arcgis/core/Graphic";
 import TimeSlider from '@arcgis/core/widgets/TimeSlider';
 import LayerList from '@arcgis/core/widgets/LayerList';
 
-import { TMCCategory } from "./models/TMCCategory";
-import { TMCFeatureService } from "./services/TMCFeatureService";
+import { TMCRecordRepo } from "./repository/TMCRecordRepo";
 import { FeatureLayerFactory } from "./factories/FeatureLayerFactory";
-import { TMCRecord } from "./models/TMCRecord";
+import { FlightRecordRepo } from "./repository/FlightRecordRepo";
 
 @Component({
     selector: "map-component",
@@ -29,12 +28,9 @@ export class MapComponent implements OnInit, OnDestroy {
     private mapCenter: Array<number>;
     private baseMapName: string;
 
-    private catFilterStr = "";
     private txtFilterStr = "";
 
     public featuresOnMap: number;
-    public filterCategories: Array<TMCCategory>;
-
     public features: Array<Graphic> = [];
 
     @ViewChild("mapViewNode", { static: true }) private mapViewElement: ElementRef;
@@ -70,10 +66,9 @@ export class MapComponent implements OnInit, OnDestroy {
             position: "top-right"
         });
 
-        TMCFeatureService.GetFeatures()
+        new TMCRecordRepo().GetFeatures()
         .then(features => {
-            const factory = new FeatureLayerFactory<TMCRecord>();
-            this.featureLayer = factory.BuildFeatureLayer(features, { layerName: 'Traffic Data Layer'});
+            this.featureLayer = FeatureLayerFactory.BuildFeatureLayer(features, { layerName: 'Traffic Data Layer', useViewTime: true });
             map.add(this.featureLayer);
 
             this.mapView.whenLayerView(this.featureLayer).then(lv => {
@@ -81,6 +76,12 @@ export class MapComponent implements OnInit, OnDestroy {
             });
         })
         .catch(e => console.log(e));
+
+        new FlightRecordRepo().GetFeatures()
+        .then(features => {
+            const newFL = FeatureLayerFactory.BuildFeatureLayer(features, { renderStyle: 'Line', layerName: 'Flight Aware Layer' });
+            map.add(newFL);
+        })
     }
 
     ngOnDestroy() {
@@ -96,7 +97,7 @@ export class MapComponent implements OnInit, OnDestroy {
     }
 
     private applyFilter(): void {
-        const filterStr = `(filterableStr like ${this.catFilterStr}) AND (filterableStr like ${this.txtFilterStr})`;
+        const filterStr = `(filterableStr like ${this.txtFilterStr})`;
         this.mapView.allLayerViews.forEach(lv => {
             if (lv.layer.type == "feature") {
                 (lv as FeatureLayerView).filter.where = filterStr;

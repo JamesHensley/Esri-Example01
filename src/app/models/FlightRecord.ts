@@ -14,9 +14,8 @@ export class FlightRecord {
     public type: string;
     public geometry: geometry;
     public properties: properties;
+
     constructor(init?: Partial<FlightRecord>) {
-        if (init) {
-            Object.assign(this, init);
-        }
+        if (init) { Object.assign(this, init); }
     }
 }

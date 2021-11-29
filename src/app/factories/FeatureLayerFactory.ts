@@ -12,7 +12,7 @@ export class FeatureLayerFactory<T> {
     public BuildFeatureLayer(features: Array<T>, init?:Partial<IFeatureLayerProps>): FeatureLayer {
         const mapper = new GraphicMapper<T>();
         const feats = features.map(d => mapper.MapObj(d));
-        (window as any).jimFeats = feats;
+        // (window as any).jimFeats = feats;    /* Cheat for testing */
         
         let dates = feats.map(d => d.attributes.timeStamp)
             .sort()
@@ -27,9 +27,10 @@ export class FeatureLayerFactory<T> {
             fields: [
                 { name: "ObjectID", alias: "ObjectID", type: "oid" },
                 { name: "title", alias: "title", type: "string" },
+                { name: "info", alias: "info", type: "string" },
                 { name: "latitude", alias: "latitude", type: "string" },
                 { name: "longitude", alias: "longitude", type: "string" },
-                { name: "eventCategory", alias: "eventCategory", type: "string" },
+                { name: "filterableStr", alias: "filterableStr", type: "string" },
                 { name: "timeStamp", alias: "timeStamp", type: "long" }
             ],
             renderer: new SimpleRenderer({
@@ -37,7 +38,22 @@ export class FeatureLayerFactory<T> {
                     color: [0, 0, 0, 0.5],
                     size: 10
                 })
-            })
+            }),
+            popupEnabled: true,
+            popupTemplate: {
+                title: '{title}',
+                content: [
+                    {
+                        type: "fields",
+                        fieldInfos: [
+                            { fieldName: "info", label: "Information: " },
+                            { fieldName: "timeStamp", label: "Timestamp: " },
+                            { fieldName: "latitude", label: "Latitude: " },
+                            { fieldName: "longitude", label: "Longitude: " }
+                        ]
+                    }
+                ]
+            }
         });
     }
 }

@@ -10,7 +10,6 @@
             <app-esri-filter
                 [categories]='filterCategories'
                 [eventsOnMap]='featuresOnMap'
-                (filterCategoriesChanged) = 'filterByCats($event)'
                 (filterTextUpdated) = 'filterByText($event)'
             ></app-esri-filter>
         </div>

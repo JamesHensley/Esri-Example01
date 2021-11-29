@@ -10,27 +10,16 @@ export class GraphicMapper<T> {
     }
 
     private mapTMCRecords(rec: TMCRecord): Graphic {
-        const i = {
-            ObjectID: Math.floor(new Date().getTime() + Math.random() * 500).toString(),
-            EventText: rec.EventText,
-            Latitude: rec.Latitude,
-            Longitude: rec.Longitude,
-            timeStamp: parseInt(rec.timeStamp, 10) * 1000
-        };
-
         return new Graphic({
-            /*
             attributes: {
                 ObjectID: Math.floor(new Date().getTime() + Math.random() * 500).toString(),
                 title: rec.EventText,
-                // info: rec.EventText,
-                // category: rec.EventCategory,
+                info: rec.EventCategory,
                 latitude: rec.Latitude,
                 longitude: rec.Longitude,
+                filterableStr: (`${rec.EventText} ${rec.EventCategory}`).toLowerCase(),
                 timeStamp: parseInt(rec.timeStamp, 10) * 1000
             },
-            */
-            attributes: i,
             geometry: new Point({
                 x: parseFloat(rec.Longitude),
                 y: parseFloat(rec.Latitude)

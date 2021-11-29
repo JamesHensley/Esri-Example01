@@ -24,11 +24,13 @@ import { TMCRecord } from "./models/TMCRecord";
 export class MapComponent implements OnInit, OnDestroy {
     private mapView: MapView;
     private featureLayer: FeatureLayer;
-    private featureLayerView: FeatureLayerView;
 
     private mapZoom: number;
     private mapCenter: Array<number>;
     private baseMapName: string;
+
+    private catFilterStr = "";
+    private txtFilterStr = "";
 
     public featuresOnMap: number;
     public filterCategories: Array<TMCCategory>;
@@ -75,11 +77,8 @@ export class MapComponent implements OnInit, OnDestroy {
             map.add(this.featureLayer);
 
             this.mapView.whenLayerView(this.featureLayer).then(lv => {
-                this.featureLayerView = lv;
                 timeSlider.fullTimeExtent = this.featureLayer.timeExtent.expandTo("hours");
-                console.log(this.featureLayer);
             });
-            console.log(TMCFeatureService.Categories);
         })
         .catch(e => console.log(e));
     }
@@ -90,15 +89,18 @@ export class MapComponent implements OnInit, OnDestroy {
         }
     }
 
-    public filterByCats(): void {
-        console.log("filterByCats Called");
-        const xx = this.mapView.allLayerViews.find(x => x.layer === this.featureLayer);
-        console.log("Found Layer Views: ", xx);
-    }
-
     public filterTextUpdated(): void {
         console.log("filterTextUpdated Called");
         const xx = this.mapView.allLayerViews.find(x => x.layer === this.featureLayer);
         console.log("Found Layer Views: ", xx);
+    }
+
+    private applyFilter(): void {
+        const filterStr = `(filterableStr like ${this.catFilterStr}) AND (filterableStr like ${this.txtFilterStr})`;
+        this.mapView.allLayerViews.forEach(lv => {
+            if (lv.layer.type == "feature") {
+                (lv as FeatureLayerView).filter.where = filterStr;
+            }
+        });
     }
 }

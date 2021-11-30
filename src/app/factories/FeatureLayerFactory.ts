@@ -2,6 +2,7 @@ import Graphic from '@arcgis/core/Graphic';
 import FeatureLayer from '@arcgis/core/layers/FeatureLayer';
 import { SimpleRenderer } from '@arcgis/core/renderers';
 import { SimpleLineSymbol, SimpleMarkerSymbol } from "@arcgis/core/symbols";
+import { BaseRepository, RepoTypes } from '../repository/BaseRepository';
 
 export type RenderStyles = 'Point' | 'Line';
 
@@ -12,6 +13,13 @@ export interface IFeatureLayerProps {
 }
 
 export class FeatureLayerFactory {
+    /*
+    public static async testBuild(repoType: RepoTypes, init?:Partial<IFeatureLayerProps>): Promise<FeatureLayer> {
+        const feats =  await BaseRepository.GetRepository(repoType).GetFeatures();
+        return this.BuildFeatureLayer(feats, init);
+    }
+    */
+
     public static BuildFeatureLayer(graphicObjs: Array<Graphic>, init?:Partial<IFeatureLayerProps>): FeatureLayer {
         //(window as any)[`JimFeats${Math.floor(Math.random() * 100)}`] = graphicObjs;    /* Cheat for testing */
         const feats = this.validateGeometry(graphicObjs);

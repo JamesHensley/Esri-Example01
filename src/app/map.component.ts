@@ -8,10 +8,10 @@ import FeatureLayerView from '@arcgis/core/views/layers/FeatureLayerView';
 import Graphic from "@arcgis/core/Graphic";
 import TimeSlider from '@arcgis/core/widgets/TimeSlider';
 import LayerList from '@arcgis/core/widgets/LayerList';
+import FeatureFilter from '@arcgis/core/views/layers/support/FeatureFilter';
 
-import { TMCRecordRepo } from "./repository/TMCRecordRepo";
 import { FeatureLayerFactory } from "./factories/FeatureLayerFactory";
-import { FlightRecordRepo } from "./repository/FlightRecordRepo";
+import { BaseRepository, RepoTypes } from "./repository/BaseRepository";
 
 @Component({
     selector: "map-component",
@@ -26,8 +26,6 @@ export class MapComponent implements OnInit, OnDestroy {
     private mapZoom: number;
     private mapCenter: Array<number>;
     private baseMapName: string;
-
-    private txtFilterStr = "";
 
     public featuresOnMap: number;
     public features: Array<Graphic> = [];
@@ -67,18 +65,39 @@ export class MapComponent implements OnInit, OnDestroy {
             position: "top-right"
         });
 
-        new TMCRecordRepo().GetFeatures()
+        BaseRepository.GetRepository(RepoTypes.TrafficMessageRecords).GetFeatures()
         .then(features => {
             const featureLayer = FeatureLayerFactory.BuildFeatureLayer(features, { layerName: 'Traffic Data Layer', useViewTime: true });
             map.add(featureLayer);
 
             this.mapView.whenLayerView(featureLayer).then(lv => {
                 this.timeSlider.fullTimeExtent = featureLayer.timeExtent.expandTo("hours");
+                const ids = (featureLayer.source as any).items.map(d => d.attributes.ObjectID);
+
+                /*
+                setInterval(() => {
+                    const oid = ids[Math.floor(Math.random() * ids.length)]
+                    featureLayer.queryFeatures({ objectIds: [oid] })
+                    .then(result => {
+                        const tgt = result.features[0]; //((feats as any).geometry as any);
+                        const val = Math.round(Math.random()) ? .1 : -0.1;
+                        Math.round(Math.random()) ? tgt.geometry.y = tgt.y + val : tgt.x = tgt.x + val;
+                        featureLayer.applyEdits({ updateFeatures: [tgt] })
+                        .then(r => {
+                            //
+                        })
+                        .catch(e => {
+                            //
+                        })
+                    })
+                    //Math.round(Math.random()) ? tgt.geometry.set('y', (tgt as any).y + val) : tgt.geometry.set('x', (tgt as any).x + val);
+                }, 500);
+                */
             });
         })
         .catch(e => console.log(e));
 
-        new FlightRecordRepo().GetFeatures()
+        BaseRepository.GetRepository(RepoTypes.FlightRecords).GetFeatures()
         .then(features => {
             const featureLayer = FeatureLayerFactory.BuildFeatureLayer(features, { renderStyle: 'Line', layerName: 'Flight Aware Layer' });
             map.add(featureLayer);
@@ -92,17 +111,15 @@ export class MapComponent implements OnInit, OnDestroy {
         }
     }
 
-    public filterTextUpdated(): void {
-        // console.log("filterTextUpdated Called");
-        // const xx = this.mapView.allLayerViews.find(x => x.layer === this.featureLayer);
-        // console.log("Found Layer Views: ", xx);
+    public filterTextUpdated(txt): void {
+        this.applyFilter(`'%${txt}%'`);
     }
 
-    private applyFilter(): void {
-        const filterStr = `(filterableStr like ${this.txtFilterStr})`;
+    private applyFilter(filterStr: string): void {
+        const filter = new FeatureFilter({ where: `(filterableStr like ${filterStr})` });
         this.mapView.allLayerViews.forEach(lv => {
             if (lv.layer.type == "feature") {
-                (lv as FeatureLayerView).filter.where = filterStr;
+                (lv as FeatureLayerView).filter = filter;
             }
         });
     }

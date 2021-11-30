@@ -1,18 +1,7 @@
 <!-- Here's the DIV that we inject the map into -->
+
+<tool-bar (filterTextUpdated)='filterTextUpdated($event)'></tool-bar>
 <div class='container-fluid'>
-    <div class='row'>
-        <div class='col-sm-9 p-0'>
-            <div #mapViewNode class='mapDiv'></div>
-            <div #timeSliderDiv class='w-100'></div>
-        </div>
-        <!--
-        <div class='col-sm-3 p-0'>
-            <app-esri-filter
-                [categories]='filterCategories'
-                [eventsOnMap]='featuresOnMap'
-                (filterTextUpdated) = 'filterByText($event)'
-            ></app-esri-filter>
-        </div>
-        -->
-    </div>
+    <div #mapViewNode class='mapDiv'></div>
+    <div #timeSliderDiv class='w-100'></div>
 </div>

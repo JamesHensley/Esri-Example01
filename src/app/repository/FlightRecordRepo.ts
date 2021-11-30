@@ -1,9 +1,9 @@
 import Graphic from "@arcgis/core/Graphic";
 import { GraphicFactory } from "../factories/GraphicFactory";
 import { FlightRecord } from "../models/FlightRecord";
-import { BaseRepository } from "./BaseRepository";
+import { BaseRepository, IRepository } from "./BaseRepository";
 
-export class FlightRecordRepo implements BaseRepository<FlightRecord> {
+export class FlightRecordRepo implements IRepository {
     public GetFeatures(): Promise<Array<Graphic>> {
         return fetch('https://raw.githubusercontent.com/JamesHensley/Esri-Example01/master/src/resources/flightData.json')
         .then(data => data.json())
